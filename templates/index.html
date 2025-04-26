@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>School Elections</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+    <h1 class="mb-4">Vote for your favorite candidate!</h1>
+    <form action="/vote" method="post">
+        {% for candidate, count in votes.items() %}
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="candidate" value="{{ candidate }}" required>
+                <label class="form-check-label">
+                    {{ candidate }} ({{ count }} votes)
+                </label>
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary mt-3">Submit Vote</button>
+    </form>
+</body>
+</html>
