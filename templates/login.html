@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head><title>Login</title></head>
 <body>
@@ -8,5 +8,84 @@
         Password: <input type="password" name="password" required><br><br>
         <button type="submit">Login</button>
     </form>
+</body>
+</html> -->
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yuvabharathi Public School | Voting app 2025 - 2026</title>
+</head>
+<body>
+    
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting System Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="vertical-bar"></div>
+    <div class="container">
+        <div class="login-section">
+            <h1 class="system-title">Student council elections</h1>
+            <p class="subtitle">Welcome! Please login to cast your votes!</p>
+            
+            <form class="login-form" id="loginForm" method="POST">
+                <div class="form-group">
+                    <label for="admissionNumber">Admission Number</label>
+                    <input 
+                        type="text" 
+                        id="admissionNumber" 
+                        name="username" 
+                        required 
+                        placeholder="Enter your admission number"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="passCode">Pass Code</label>
+                    <input 
+                        type="password" 
+                        id="passCode" 
+                        name="password" 
+                        required 
+                        placeholder="Enter your pass code"
+                    >
+                    <span class="error-message" id="errorMessage">Invalid credentials. Please try again.</span>
+                </div>
+                
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const admissionNumber = document.getElementById('admissionNumber').value;
+            const passCode = document.getElementById('passCode').value;
+            
+            // Add your authentication logic here
+            // For demo purposes, showing error handling:
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'block';
+            
+            // Reset form after 3 seconds
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 3000);
+        });
+    </script>
 </body>
 </html>
