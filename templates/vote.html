@@ -1,29 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Vote - School Voting</title>
-</head>
+<html>
+<head><title>Vote</title></head>
 <body>
-    <h2>Welcome {{ session['user'] }} ({{ house }} House)</h2>
-    
+    <h2>Welcome {{ username }} ({{ house }} House)</h2>
+    <h3>Vote for Common Posts:</h3>
     <form method="POST">
-        <h3>Vote for Common Posts:</h3>
-        {% for candidate in common_list %}
-            <input type="radio" name="common_candidate" value="{{ candidate }}" required> {{ candidate }}<br>
+        {% for id, name in common_candidates %}
+            <input type="radio" name="common_vote" value="{{ id }}"> {{ name }}<br>
         {% endfor %}
-        
+        <br>
         <h3>Vote for Your House Representative:</h3>
-        {% for candidate in house_list %}
-            <input type="radio" name="house_candidate" value="{{ candidate }}" required> {{ candidate }}<br>
+        {% for id, name in house_candidates %}
+            <input type="radio" name="house_vote" value="{{ id }}"> {{ name }}<br>
         {% endfor %}
-        
         <br>
         <button type="submit">Submit Vote</button>
     </form>
-
     <br><br>
-    <form action="{{ url_for('logout') }}" method="GET">
+    <form action="{{ url_for('logout') }}">
         <button type="submit">Logout</button>
     </form>
 </body>

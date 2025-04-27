@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, url_for, session
 import firebase_admin
 from firebase_admin import credentials, firestore
 import os
 
 app = Flask(__name__)
-app.secret_key = 'oruviralpuratchiii'  # change this to anything random
+app.secret_key = 'oruviralpuratchiii'  # Change this to something random
 
 # Initialize Firebase
 cred = credentials.Certificate('firebase_key.json')
@@ -17,18 +17,19 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        users_ref = db.collection('users')
-        user_doc = users_ref.document(username).get()
+        user_ref = db.collection('users').document(username)
+        user = user_ref.get()
 
-        if user_doc.exists:
-            user = user_doc.to_dict()
-            if user['password'] == password:
+        if user.exists:
+            user_data = user.to_dict()
+            if user_data['password'] == password:
                 session['username'] = username
-                session['house'] = user.get('house', '')
+                session['house'] = user_data['house']
                 return redirect('/vote')
-        
-        return render_template('login.html', error="Invalid username or password")
-
+            else:
+                return 'Incorrect password'
+        else:
+            return 'User does not exist'
     return render_template('login.html')
 
 @app.route('/vote', methods=['GET', 'POST'])
@@ -39,41 +40,42 @@ def vote():
     username = session['username']
     house = session['house']
 
-    candidates_ref = db.collection('candidates')
-    candidates = candidates_ref.stream()
-
+    candidates = db.collection('candidates').stream()
     common_candidates = []
     house_candidates = []
 
     for candidate in candidates:
-        c = candidate.to_dict()
-        if c.get('position') == "Common":
-            common_candidates.append({'id': candidate.id, 'name': c['name']})
-        elif c.get('position') == house:
-            house_candidates.append({'id': candidate.id, 'name': c['name']})
+        data = candidate.to_dict()
+        if data['position'].lower() == 'common':
+            common_candidates.append((candidate.id, data['name']))
+        elif data['position'].lower() == house.lower():
+            house_candidates.append((candidate.id, data['name']))
 
     if request.method == 'POST':
         common_vote = request.form.get('common_vote')
         house_vote = request.form.get('house_vote')
 
         if common_vote:
-            candidate_ref = candidates_ref.document(common_vote)
-            candidate_ref.update({"votes": firestore.Increment(1)})
+            candidate_ref = db.collection('candidates').document(common_vote)
+            candidate = candidate_ref.get()
+            if candidate.exists:
+                candidate_ref.update({'votes': firestore.Increment(1)})
 
         if house_vote:
-            candidate_ref = candidates_ref.document(house_vote)
-            candidate_ref.update({"votes": firestore.Increment(1)})
+            candidate_ref = db.collection('candidates').document(house_vote)
+            candidate = candidate_ref.get()
+            if candidate.exists:
+                candidate_ref.update({'votes': firestore.Increment(1)})
 
         return redirect('/thanks')
 
-    return render_template('vote.html', username=username, house=house, common_candidates=common_candidates, house_candidates=house_candidates)
+    return render_template('vote.html', username=username, house=house,
+                           common_candidates=common_candidates,
+                           house_candidates=house_candidates)
 
 @app.route('/thanks')
 def thanks():
     return render_template('thanks.html')
-
-if __name__ == '__main__':
-    app.run(debug=True)
 
 @app.route('/logout')
 def logout():
