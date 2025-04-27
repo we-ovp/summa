@@ -1,83 +1,76 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session
 import firebase_admin
 from firebase_admin import credentials, firestore
 import os
 
 app = Flask(__name__)
-app.secret_key = 'a-very-secret-key-change-this'  # Change this in real deployment
+app.secret_key = 'oruviralpuratchiii'  # change this to anything random
 
 # Initialize Firebase
 cred = credentials.Certificate('firebase_key.json')
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-# Routes
-@app.route('/')
-def home():
-    if 'user' in session:
-        return redirect(url_for('vote'))
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        user_ref = db.collection('users').document(username)
-        user = user_ref.get()
+        users_ref = db.collection('users')
+        user_doc = users_ref.document(username).get()
 
-        if user.exists:
-            user_data = user.to_dict()
-            if user_data['password'] == password:
-                session['user'] = username
-                session['house'] = user_data['house']
-                return redirect(url_for('vote'))
-            else:
-                return render_template('login.html', error='Invalid password.')
-        else:
-            return render_template('login.html', error='User does not exist.')
+        if user_doc.exists:
+            user = user_doc.to_dict()
+            if user['password'] == password:
+                session['username'] = username
+                session['house'] = user.get('house', '')
+                return redirect('/vote')
+        
+        return render_template('login.html', error="Invalid username or password")
 
     return render_template('login.html')
 
 @app.route('/vote', methods=['GET', 'POST'])
 def vote():
-    if 'user' not in session:
-        return redirect(url_for('login'))
+    if 'username' not in session:
+        return redirect('/')
 
+    username = session['username']
     house = session['house']
-    common_candidates = db.collection('candidates').document('common').get()
-    house_candidates = db.collection('candidates').document(house).get()
 
-    common_list = common_candidates.to_dict().get('candidates', []) if common_candidates.exists else []
-    house_list = house_candidates.to_dict().get('candidates', []) if house_candidates.exists else []
+    candidates_ref = db.collection('candidates')
+    candidates = candidates_ref.stream()
+
+    common_candidates = []
+    house_candidates = []
+
+    for candidate in candidates:
+        c = candidate.to_dict()
+        if c.get('position') == "Common":
+            common_candidates.append({'id': candidate.id, 'name': c['name']})
+        elif c.get('position') == house:
+            house_candidates.append({'id': candidate.id, 'name': c['name']})
 
     if request.method == 'POST':
-        selected_common = request.form.get('common_candidate')
-        selected_house = request.form.get('house_candidate')
+        common_vote = request.form.get('common_vote')
+        house_vote = request.form.get('house_vote')
 
-        vote_data = {
-            'user': session['user'],
-            'house': house,
-            'common_vote': selected_common,
-            'house_vote': selected_house
-        }
-        db.collection('votes').document(session['user']).set(vote_data)
+        if common_vote:
+            candidate_ref = candidates_ref.document(common_vote)
+            candidate_ref.update({"votes": firestore.Increment(1)})
 
-        return redirect(url_for('thanks'))
+        if house_vote:
+            candidate_ref = candidates_ref.document(house_vote)
+            candidate_ref.update({"votes": firestore.Increment(1)})
 
-    return render_template('vote.html', common_list=common_list, house_list=house_list, house=house)
+        return redirect('/thanks')
+
+    return render_template('vote.html', username=username, house=house, common_candidates=common_candidates, house_candidates=house_candidates)
 
 @app.route('/thanks')
 def thanks():
-    if 'user' not in session:
-        return redirect(url_for('login'))
     return render_template('thanks.html')
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('login'))
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    app.run(debug=True)
