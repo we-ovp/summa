@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Login</title>
+    <meta charset="UTF-8">
+    <title>Login - School Voting</title>
 </head>
-<body class="container mt-5">
-  <h1>Student Login</h1>
-  <form action="/login" method="post">
-    <input type="text" name="username" placeholder="Username" required><br><br>
-    <input type="password" name="password" placeholder="Password" required><br><br>
-    <button type="submit">Login</button>
-  </form>
+<body>
+    <h2>Login</h2>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form method="POST">
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br><br>
+        
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br><br>
+        
+        <button type="submit">Login</button>
+    </form>
 </body>
 </html>

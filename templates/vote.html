@@ -1,30 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Voting Page</title>
+    <meta charset="UTF-8">
+    <title>Vote - School Voting</title>
 </head>
-<body class="container mt-5">
-  <h1>Welcome! Voting for {{ house }}</h1>
-  <form action="/submit_vote" method="post">
+<body>
+    <h2>Welcome {{ session['user'] }} ({{ house }} House)</h2>
     
-    <h2>House-specific Election</h2>
-    {% for candidate in house_candidates %}
-      <div>
-        <input type="radio" name="house_candidate" value="{{ candidate }}" required>
-        {{ candidate }}
-      </div>
-    {% endfor %}
-    
-    <h2>Common Election</h2>
-    {% for candidate in common_candidates %}
-      <div>
-        <input type="radio" name="common_candidate" value="{{ candidate }}" required>
-        {{ candidate }}
-      </div>
-    {% endfor %}
-    
-    <button type="submit">Submit Vote</button>
-  </form>
+    <form method="POST">
+        <h3>Vote for Common Posts:</h3>
+        {% for candidate in common_list %}
+            <input type="radio" name="common_candidate" value="{{ candidate }}" required> {{ candidate }}<br>
+        {% endfor %}
+        
+        <h3>Vote for Your House Representative:</h3>
+        {% for candidate in house_list %}
+            <input type="radio" name="house_candidate" value="{{ candidate }}" required> {{ candidate }}<br>
+        {% endfor %}
+        
+        <br>
+        <button type="submit">Submit Vote</button>
+    </form>
+
+    <br><br>
+    <form action="{{ url_for('logout') }}" method="GET">
+        <button type="submit">Logout</button>
+    </form>
 </body>
 </html>
